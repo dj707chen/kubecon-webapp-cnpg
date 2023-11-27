@@ -3,8 +3,12 @@ kind: Cluster
 metadata:
   name: cluster-example
 spec:
+  enableSuperuserAccess: true
   instances: 3
-
+  logLevel: trace
+  # Optional, By default, the operator will install the latest available minor version of the latest major version of PG when the operator was released.
+  # But, The immutable infrastructure paradigm requires that you always point to a specific version of the container image
+  imageName: ghcr.io/cloudnative-pg/postgresql:14.10
   storage:
     size: 1Gi
   monitoring:

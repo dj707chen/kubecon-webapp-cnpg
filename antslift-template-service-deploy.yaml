@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
       - name: ants-tmlt-svc
-        image: us-central1-docker.pkg.dev/lunar-outlet-403221/antslift-docker/antslift-service-template
+        image: us-central1-docker.pkg.dev/lunar-outlet-403221/antslift-docker/antslift-service-template:1.6.0
         imagePullPolicy: Never
         ports:
         - containerPort: 8080
@@ -36,27 +36,17 @@ spec:
         - name: APP_LOG_APPENDER
           value: STDOUT
         - name: POSTGRES_JDBC_URL
-          value: jdbc:postgres://cluster-example-rw/app?sslmode=require
-        - name: PG_PASSWORD
+          value: jdbc:postgresql://cluster-example-rw/app?sslmode=require
+        - name: POSTGRES_USERNAME
           valueFrom:
             secretKeyRef:
-              name: cluster-example-app
-              key: password
-        - name: PG_USER
-          valueFrom:
-            secretKeyRef:
-              name: cluster-example-app
+              # Need to use superuser for now, otherwise ERROR: permission denied to set role "antslift_service_template (SQL State: 42501)
+              # https://github.com/antslift-org/antslift-service-template/blob/6992312439ba8c9f5bdd3c4c7f42f5bbe5167ffa/src/main/resources/db/migration/beforeEachMigrate.sql#L25
+              # For how superuser is defined, refer https://cloudnative-pg.io/documentation/current/applications/#secrets
+              name: cluster-example-superuser
               key: username
-
-#  2023-11-15T03:46:17.275729821Z stdout F 03:46:17.275 [io-compute-blocker-2] ERROR c.a.t.Server - Migrations failed: No database found to handle jdbc:postgres://cluster-example-rw/app?sslmode=require
-#  2023-11-15T03:46:17.275761409Z stdout F org.flywaydb.core.api.FlywayException: No database found to handle jdbc:postgres://cluster-example-rw/app?sslmode=require
-#    2023-11-15T03:46:17.275765025Z stdout F 	at org.flywaydb.core.internal.database.DatabaseTypeRegister.getDatabaseTypeForUrl(DatabaseTypeRegister.java:55)
-#    2023-11-15T03:46:17.275768174Z stdout F 	at org.flywaydb.core.internal.jdbc.DriverDataSource.<init>(DriverDataSource.java:109)
-#    2023-11-15T03:46:17.27579105Z stdout F 	at org.flywaydb.core.internal.jdbc.DriverDataSource.<init>(DriverDataSource.java:80)
-#    2023-11-15T03:46:17.275800149Z stdout F 	at org.flywaydb.core.api.configuration.ClassicConfiguration.setDataSource(ClassicConfiguration.java:972)
-#    2023-11-15T03:46:17.275802875Z stdout F 	at org.flywaydb.core.api.configuration.FluentConfiguration.dataSource(FluentConfiguration.java:693)
-#    2023-11-15T03:46:17.275805631Z stdout F 	at com.antslift.tmplt.migrations.Migrations$.$anonfun$makeMigrations$2(Migrations.scala:20)
-#    2023-11-15T03:46:17.275808706Z stdout F 	at scala.Option.fold(Option.scala:263)
-#    2023-11-15T03:46:17.275811246Z stdout F 	at com.antslift.tmplt.migrations.Migrations$.$anonfun$makeMigrations$1(Migrations.scala:21)
-#    2023-11-15T03:46:17.275813832Z stdout F 	at delay @ com.antslift.tmplt.migrations.Migrations$.makeMigrations(Migrations.scala:24)
-#    2023-11-15T03:46:17.275816472Z stdout F 	at flatMap @ com.antslift.tmplt.migrations.Migrations$.makeMigrations(Migrations.scala:27)
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cluster-example-superuser
+              key: password

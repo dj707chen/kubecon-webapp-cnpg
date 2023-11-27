@@ -1,0 +1,15 @@
+# Copied from https://github.com/Banno/banno-core-migrations/blob/16c32af64272143ac02dfbc819d6da5febb2271b/docker-compose.yml
+# then changed port from 8080 to 5432
+
+version: '3.3'
+
+services:
+  flyway:
+    depends_on:
+      - db
+    image: flyway/flyway:8.5.13
+    command: info -url=jdbc:postgresql://localhost:5432/app?sslmode=require -locations=filesystem:/opt/migrations -password=postgres -user=postgres
+    volumes:
+      - type: bind
+        source: ./migrations
+        target: /opt/migrations
